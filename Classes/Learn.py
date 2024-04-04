@@ -1,6 +1,7 @@
 import csv
 import os
 import random
+import pygame
 
 currentDir = os.path.dirname(__file__)
 fileCsv = os.path.join(currentDir, "../Education/wordsToLearn.csv")
@@ -9,7 +10,7 @@ iteration = 0
 class Learn:
     def wordChoose(self):
         global iteration
-        if iteration == 0:  # для первого
+        if iteration == 0:  # для первого входа
             iteration += 1
             with open(fileCsv, 'r', encoding='utf-8') as file:
                 reader = csv.reader(file)
@@ -19,9 +20,11 @@ class Learn:
 
                 for string in strings:
                     words.append(string)
+
         if iteration >= 1:
             word, meaning = self.giveWord()
             return word, meaning
+
 
 
             # мб сделать csv с изученными словами и выводить его пока в окно "настройки"
@@ -29,11 +32,13 @@ class Learn:
             # и можно записывать не в words а тоже в .csv файл
     def giveWord(self): #
         global iteration
+        if iteration > 3:
+            iteration = 1
         string = words[iteration-1]
         iteration += 1
         return string
 
-    def exam(self): #
-        pass
+    def exam(self): # прописать логику
+        print("exam")
 
 

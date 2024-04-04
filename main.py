@@ -8,7 +8,7 @@ from Classes.Player import *
 from Classes.Ship import *
 
 pygame.init()
-
+global paused
 # region settings
 width, height = 960, 704
 surface = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -21,6 +21,7 @@ screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Меню")
 background = pygame.image.load("Images/Backgrounds/WorkInProgress2.png")
 backgroundGame = pygame.transform.scale(pygame.image.load("Images/Backgrounds/Map.png"), (width, height))
+backgroundNewWord = pygame.transform.scale(pygame.image.load("Images/Backgrounds/newWordMenu.png"), (720, 384))
 
 #region MenuFunc
 def MainMenu():
@@ -67,24 +68,47 @@ def collide(obj1, obj2): # столкновение объектов
     return obj1.mask.overlap(obj2.mask, (offsetX, offsetY)) != None
 
 def drawPauseMenu():
+    global paused
+    global score
+    paused = True
     pygame.draw.rect(surface, (128, 128, 128, 150), [0, 0, width, height])
     screen.blit(surface, (0, 0))
+    screen.blit(backgroundNewWord, (width // 2 - backgroundNewWord.get_width() // 2, height // 2 - backgroundNewWord.get_height() // 2))
     learn = Learn()
     word, meaning = learn.wordChoose()
 
-    # Создаем текстовую поверхность для слова и значения
-    word_surface = get_font(75).render(word, True, (255, 255, 255))
-    meaning_surface = get_font(75).render(meaning, True, (255, 255, 255))
+    while paused:
+        # Создаем текстовую поверхность для слова и значения
+        word_surface = get_font(75).render(word, True, (255, 255, 255))
+        meaning_surface = get_font(75).render(meaning, True, (255, 255, 255))
 
-    # Определяем координаты для вывода текста
-    word_pos = (width // 2 - word_surface.get_width() // 2, height // 2 - 50)
-    meaning_pos = (width // 2 - meaning_surface.get_width() // 2, height // 2 + 50)
+        menuMousePos = pygame.mouse.get_pos()
+        continueButton = Button(image=None, pos=(width // 2, height // 2 + 140),
+                            text_input="Понятно", font=get_font(40), base_color="Gray", hovering_color="#d7fcd4")
+        continueButton.changeColor(menuMousePos)
+        continueButton.update(screen)
 
-    # Выводим текст на экран
-    screen.blit(word_surface, word_pos)
-    screen.blit(meaning_surface, meaning_pos)
 
-    pygame.display.update() # обновить дисплей не забыть
+
+        # Определяем координаты для вывода текста
+        word_pos = ( width // 2 - ( word_surface.get_width() // 2 + meaning_surface.get_width() // 2), height // 2 - 50)
+        meaning_pos = (word_pos[0] + word_surface.get_width(), height // 2 - 50)
+
+        # Выводим текст на экран
+        screen.blit(word_surface, word_pos)
+        screen.blit(meaning_surface, meaning_pos)
+
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if continueButton.checkForInput(menuMousePos):
+                    score += 5
+                    paused = False
+
+        pygame.display.update() # обновить дисплей не забыть
 
 
 
@@ -94,6 +118,7 @@ def Play():
     global paused
     paused = False
     FPS = 60
+    global score
     score = 0
     goal = 3
     playerSpeed = 5
@@ -133,9 +158,9 @@ def Play():
         if paused == False:
             redraw_window()
 
-            if score >= 10 : # для теста с LEARN
+            if score in [10, 20, 30]: # для теста с LEARN сделать для разного кол-ва очков &_&
                 drawPauseMenu()
-                paused = True
+                # paused = True
 
         if hearts <= 0:
             lost = True
