@@ -18,10 +18,11 @@ def get_font(size):  # Returns Press-Start-2P in the desired size
 # endregion
 
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Меню")
+pygame.display.set_caption("SpaceEng")
 background = pygame.image.load("Images/Backgrounds/WorkInProgress2.png")
 backgroundGame = pygame.transform.scale(pygame.image.load("Images/Backgrounds/Map.png"), (width, height))
 backgroundNewWord = pygame.transform.scale(pygame.image.load("Images/Backgrounds/newWordMenu.png"), (720, 384))
+backgroundExam = pygame.transform.scale(pygame.image.load("Images/Backgrounds/backgroundExam.png"), (720, 384))
 
 #region MenuFunc
 def MainMenu():
@@ -61,6 +62,7 @@ def MainMenu():
 
         pygame.display.update()
 #endregion
+
 
 def collide(obj1, obj2): # столкновение объектов
     offsetX = obj2.x - obj1.x
@@ -111,6 +113,77 @@ def drawPauseMenu():
         pygame.display.update() # обновить дисплей не забыть
 
 
+def examDraw():
+    global paused
+    global score
+    global correctAnsw
+    paused = True
+    pygame.draw.rect(surface, (128, 128, 128), [0, 0, width, height])
+    screen.blit(surface, (0, 0))
+    screen.blit(backgroundExam, (width // 2 - backgroundExam.get_width() // 2, height // 2 - backgroundExam.get_height() // 2))
+    learn = Learn()
+    learn.words = words
+
+    questionIndex = 0
+
+    while questionIndex < len(words):
+        # Получаем текущий вопрос и варианты ответов
+        question, trueAnswer = words[questionIndex]
+        answers = learn.exam(questionIndex)
+
+        # Очищаем экран
+        pygame.draw.rect(surface, (128, 128, 128), [0, 0, width, height])
+        screen.blit(surface, (0, 0))
+        screen.blit(backgroundExam,(width // 2 - backgroundExam.get_width() // 2, height // 2 - backgroundExam.get_height() // 2))
+
+        # Отрисовываем текст вопроса посередине экрана
+        font = get_font(40)
+        text = font.render(question, True, (255, 255, 255))
+        text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+        screen.blit(text, text_rect)
+
+        # Отрисовываем варианты ответов с заданным положением
+        answer_positions = [
+            (screen.get_width() // 2 - 270, screen.get_height() // 2 + 133),
+            (screen.get_width() // 2 - 35, screen.get_height() // 2 + 133),
+            (screen.get_width() // 2 + 210, screen.get_height() // 2 + 133)
+        ]
+
+        for i, (answer, pos) in enumerate(zip(answers, answer_positions)):
+            text = font.render(f"{i + 1}. {answer}", True, (255, 255, 255))
+            text_rect = text.get_rect(center=pos)
+            screen.blit(text, text_rect)
+
+        pygame.display.flip()
+
+        # Ожидаем выбора ответа от игрока
+        while paused:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if pygame.K_1 <= event.key <= pygame.K_3:
+                        # Проверяем, выбран ли правильный ответ
+                        selected_answer_index = event.key - pygame.K_1
+                        if answers[selected_answer_index] == trueAnswer:
+                            score += 1
+                            correctAnsw += 1
+                            print("Верно")
+                        paused = False
+
+        # Переходим к следующему вопросу
+        questionIndex += 1
+
+        # Проверяем, есть ли еще вопросы
+        if questionIndex < len(words):
+            paused = True
+
+        # По завершении теста выводим результат
+    print("Your score:", score)
+
+
+
 
 
 def Play():
@@ -119,6 +192,8 @@ def Play():
     paused = False
     FPS = 60
     global score
+    global correctAnsw
+    correctAnsw = 0
     score = 0
     goal = 3
     playerSpeed = 5
@@ -126,6 +201,7 @@ def Play():
     enemySpeed = 1
     hearts = 15
     lost = False
+    end = False
     lostCount = 0
     clock = pygame.time.Clock()
 
@@ -145,6 +221,10 @@ def Play():
 
         player.draw(screen)
 
+        if end:
+            examLabel = get_font(70).render(f"Вы ответили на {correctAnsw}/3", 1, (255, 255, 255))
+            screen.blit(examLabel, (width / 2 - examLabel.get_width() / 2, 350))
+
         if lost:
             lostLabel = get_font(60).render("Вы проиграли :(", 1, (255, 0, 0))
             screen.blit(lostLabel, (width/2 - lostLabel.get_width()/2, 350)) # здесь возможно с положением надписи поиграться надо
@@ -162,9 +242,20 @@ def Play():
                 drawPauseMenu()
                 # paused = True
 
+            if score == 40:
+                examDraw()
+                end = True
+                #run = False
+
         if hearts <= 0:
             lost = True
             lostCount += 1
+
+        if end:
+            if lostCount > FPS * 3:
+                run = False
+            else:
+                continue
 
         if lost:
             if lostCount > FPS * 3:

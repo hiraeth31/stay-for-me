@@ -38,7 +38,24 @@ class Learn:
         iteration += 1
         return string
 
-    def exam(self): # прописать логику
+    def exam(self, i):
         print("exam")
+        answers = []
+        word, meaning = words[i]
+        answers.append(meaning)
+        with open(fileCsv, 'r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            data = [row for row in reader]
+
+            allTargets = [row[1] for row in data]
+
+            while len(answers) < 3:
+                randomWord = random.choice(allTargets)
+                if randomWord not in answers:
+                    answers.append(randomWord)
+
+        random.shuffle(answers)
+        return answers
+
 
 
