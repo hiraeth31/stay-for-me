@@ -25,11 +25,6 @@ class Learn:
             word, meaning = self.giveWord()
             return word, meaning
 
-
-
-            # мб сделать csv с изученными словами и выводить его пока в окно "настройки"
-            # есть идея вообще сначала выбрать строку и вырезать её сразу чтоб не попадался повтор и добавить в words
-            # и можно записывать не в words а тоже в .csv файл
     def giveWord(self): #
         global iteration
         if iteration > 3:
@@ -56,6 +51,39 @@ class Learn:
 
         random.shuffle(answers)
         return answers
+
+    def wordLearned(self, learnedWord):
+        learnedWord = learnedWord.encode('utf-8').decode('utf-8')
+        print(f"Приехало слово {learnedWord}")
+        wordsToLearnPath = os.path.join(currentDir, "../Education/wordsToLearn.csv")
+        learnedWordsPath = os.path.join(currentDir, "../Education/learned.csv")
+
+        # Чтение файла со словами для изучения
+        with open(wordsToLearnPath, 'r', encoding='utf-8', newline='') as words_file:
+            reader = csv.reader(words_file)
+            words_list = list(reader)
+
+        # Поиск строки с выученным словом
+        found_word = False
+        for i, row in enumerate(words_list):
+            print(i, row)
+            if learnedWord == row[0]:  # Проверяем, есть ли слово в первом столбце строки
+                learned_word_row = row
+                words_list.pop(i)  # Удаляем строку из списка
+                found_word = True
+                break
+        print(f"{found_word} нашло или нет по итогу")
+        # Запись обновленного файла со словами для изучения
+        with open(wordsToLearnPath, 'w', encoding='utf-8', newline='') as words_file:
+            writer = csv.writer(words_file)
+            writer.writerows(words_list)
+
+        # Запись выученного слова в файл с выученными словами (только если слово найдено)
+        if found_word:
+            with open(learnedWordsPath, 'a', encoding='utf-8', newline='') as learned_file:
+                writer = csv.writer(learned_file)
+                writer.writerow(learned_word_row)
+                print("готово")
 
 
 

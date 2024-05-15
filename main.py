@@ -1,4 +1,7 @@
+import os
 import random
+import subprocess
+
 import pygame
 import sys
 from Theme.Button import Button
@@ -37,7 +40,7 @@ def MainMenu():
         playButton = Button(image=None, pos=(480, 250),
                             text_input="Игра", font=get_font(75), base_color="Gray", hovering_color="#d7fcd4")
         optionsButton = Button(image=None, pos=(480, 400),
-                               text_input="Настройки", font=get_font(75), base_color="Gray", hovering_color="#d7fcd4")
+                               text_input="Выученные слова", font=get_font(75), base_color="Gray", hovering_color="#d7fcd4")
         quitButton = Button(image=None, pos=(480, 550),
                             text_input="Выход", font=get_font(75), base_color="Gray", hovering_color="#d7fcd4")
 
@@ -170,6 +173,7 @@ def examDraw():
                             score += 1
                             correctAnsw += 1
                             print("Верно")
+                            learn.wordLearned(question)
                         paused = False
 
         # Переходим к следующему вопросу
@@ -293,7 +297,14 @@ def Play():
 
 
 def Options():
-    pass
+    learnedWords = os.getcwd() + r"\Education\learned.csv"
+    if os.path.exists(learnedWords):
+        subprocess.Popen(["notepad", learnedWords])
+    else:
+        print("Ошибка при открытии")
+
+
+
 
 if __name__ == "__main__":
     MainMenu()
