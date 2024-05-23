@@ -21,7 +21,7 @@ def get_font(size):  # Returns Press-Start-2P in the desired size
 # endregion
 
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("SpaceEng")
+pygame.display.set_caption("SpaceWord Quest")
 background = pygame.image.load("Images/Backgrounds/WorkInProgress2.png")
 backgroundGame = pygame.transform.scale(pygame.image.load("Images/Backgrounds/Map.png"), (width, height))
 backgroundNewWord = pygame.transform.scale(pygame.image.load("Images/Backgrounds/newWordMenu.png"), (720, 384))
@@ -34,7 +34,7 @@ def MainMenu():
 
         menuMousePos = pygame.mouse.get_pos()
 
-        menuText = get_font(100).render("Space English", True, "#b68f40")
+        menuText = get_font(100).render("SpaceWord Quest", True, "#b68f40")
         menuRect = menuText.get_rect(center=(480, 100))
 
         playButton = Button(image=None, pos=(480, 250),
@@ -183,8 +183,7 @@ def examDraw():
         if questionIndex < len(words):
             paused = True
 
-        # По завершении теста выводим результат
-    print("Your score:", score)
+    print("Счет:", score)
 
 
 
@@ -203,7 +202,7 @@ def Play():
     playerSpeed = 5
     enemies = []
     enemySpeed = 1
-    hearts = 15
+    hearts = 3
     lost = False
     end = False
     lostCount = 0
@@ -218,7 +217,7 @@ def Play():
         heartLabel = get_font(40).render(f"Жизни: {hearts}", 1, (255, 0, 0))
 
         screen.blit(scoreLabel, (10,10))
-        screen.blit(heartLabel, (10, scoreLabel.get_height()))
+        screen.blit(heartLabel, (10, scoreLabel.get_height() + 15))
 
         for enemy in enemies:
             enemy.draw(screen)
@@ -251,11 +250,13 @@ def Play():
                 end = True
                 #run = False
 
+
         if hearts <= 0:
             lost = True
             lostCount += 1
 
         if end:
+            lostCount += 1
             if lostCount > FPS * 3:
                 run = False
             else:
